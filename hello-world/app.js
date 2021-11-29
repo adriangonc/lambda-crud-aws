@@ -10,7 +10,7 @@ exports.lambdaHandler = async (event, context) => {
     var body;
 
     if(event.httpMethod == "POST"){
-        body = await createItem();
+        body = await createItem(event);
     }
 
     if(event.httpMethod == "GET"){
@@ -59,14 +59,21 @@ function conectDynamo() {
     return new AWS.DynamoDB.DocumentClient({ apiVersion: '2012-08-10' });
 }
 
-async function createItem(){
+async function createItem(event){
     var docClient = conectDynamo();
+
+    var event_body = JSON.parse(event.body);
+
+    console.log("Cadastrando usuario: " + event_body);
+    const crypto = require("crypto");
+    const user_id = crypto.randomBytes(16).toString("hex");
+
     var params = {
         TableName: TABLE_NAME,
         Item: {
-            'id': "4",
-            'nome': "Sara",
-            'Categoria': 2
+            'id': user_id,
+            'nome': event_body.nome,
+            'categoria': event_body.categoria
         }
     };
 
@@ -74,7 +81,6 @@ async function createItem(){
 
     try {
         const data = await docClient.put(params).promise()
-
         body = data.Item;
     } catch (err) {
         console.log(err);
@@ -114,7 +120,7 @@ async function updateItem(){
         UpdateExpression: "set nome = :nome, categoria = :categoria",
         ExpressionAttributeValues: {
             ":nome": "Sara Karine",
-            ":categoria": 3
+            ":ategoria": 3
         }
     };
 
