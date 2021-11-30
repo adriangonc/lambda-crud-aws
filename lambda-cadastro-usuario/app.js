@@ -5,8 +5,6 @@ AWS.config.update({region: 'us-east-2'});
 
 const TABLE_NAME = 'PRIMEIRA_TABELA';
 
-var docClient = new AWS.DynamoDB.DocumentClient({ apiVersion: '2012-08-10' });
-
 exports.lambdaHandler = async (event, context) => {
         
     var body;
@@ -16,7 +14,7 @@ exports.lambdaHandler = async (event, context) => {
     }
 
     if(event.httpMethod == "GET"){
-        body = await getItem(event);
+        body = await getItem();
     }
 
     if(event.httpMethod == "DELETE"){
@@ -30,20 +28,20 @@ exports.lambdaHandler = async (event, context) => {
     const response = {
         body: JSON.stringify(body)
     }
-
+    console.log("response: " + response)
     return response
 };
 
-async function getItem(event){
-    const userId = event.queryStringParameters.id
-
+async function getItem(){
+    var docClient = conectDynamo();
+    
     var params = {
         TableName: TABLE_NAME,
-        Key: {'id': userId}
+        Key: {'id': "1"}
     };
 
     var body;
-
+    console.log("Buscando Usuário!")
     try {
         const data = await docClient.get(params).promise()
 
@@ -52,11 +50,18 @@ async function getItem(event){
         console.log(err);
         body = err;
     }
-
+    console.log("Usuário consultado: " + body)
     return body
 }
 
+function conectDynamo() {
+    // Create DynamoDB document client
+    return new AWS.DynamoDB.DocumentClient({ apiVersion: '2012-08-10' });
+}
+
 async function createItem(event){
+    var docClient = conectDynamo();
+
     var event_body = JSON.parse(event.body);
 
     console.log("Cadastrando usuario: " + event_body);
@@ -82,10 +87,11 @@ async function createItem(event){
         body = err;
     }
 
-    return {'id': user_id};
+    return body
 }
 
 async function deleteItem(){
+    var docClient = conectDynamo();
     var params = {
         TableName: TABLE_NAME,
         Key: {'id': "1"}
@@ -106,13 +112,15 @@ async function deleteItem(){
 }
 
 async function updateItem(){
+    var docClient = conectDynamo();
+
     var params = {
         TableName: TABLE_NAME,
         Key: {'id': "1"},
         UpdateExpression: "set nome = :nome, categoria = :categoria",
         ExpressionAttributeValues: {
             ":nome": "Sara Karine",
-            ":ategoria": 3
+            ":categoria": 3
         }
     };
 

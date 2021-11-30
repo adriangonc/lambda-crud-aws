@@ -23,22 +23,22 @@ Resources:
         HelloWorldGet:
           Type: Api 
           Properties:
-            Path: /hello
+            Path: /cadastro
             Method: get
         HelloWorldPost:
           Type: Api 
           Properties:
-            Path: /hello
+            Path: /cadastro
             Method: post
         HelloWorldDelete:
           Type: Api 
           Properties:
-            Path: /hello
+            Path: /cadastro
             Method: delete
         HelloWorldPut:
           Type: Api 
           Properties:
-            Path: /hello
+            Path: /cadastro
             Method: put
 
 Outputs:
