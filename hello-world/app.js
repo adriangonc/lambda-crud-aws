@@ -11,26 +11,30 @@ exports.lambdaHandler = async (event, context) => {
         
     var body;
 
-    if(event.httpMethod == "POST"){
+    if(event.httpMethod == "POST" && event.path == '/cadastro'){
         body = await createItem(event);
     }
 
-    if(event.httpMethod == "GET"){
+    if(event.httpMethod == "GET" && event.path == '/cadastro'){
         body = await getItem(event);
     }
 
-    if(event.httpMethod == "DELETE"){
+    if(event.httpMethod == "DELETE" && event.path == '/cadastro'){
         body = await deleteItem();
     }
 
-    if(event.httpMethod == "PUT"){
+    if(event.httpMethod == "PUT" && event.path == '/cadastro'){
         body = await updateItem();
     }
     
+    if(event.httpMethod == "GET" && event.path == '/nomeScan'){
+        body = await getByNameWhitScan(event);
+    }
+
     const response = {
         body: JSON.stringify(body)
     }
-
+    
     return response
 };
 
@@ -112,7 +116,7 @@ async function updateItem(){
         UpdateExpression: "set nome = :nome, categoria = :categoria",
         ExpressionAttributeValues: {
             ":nome": "Sara Karine",
-            ":ategoria": 3
+            ":categoria": 3
         }
     };
 
@@ -128,4 +132,34 @@ async function updateItem(){
     }
 
     return body
+}
+
+async function getByNameWhitScan(event){
+    const categoria = event.queryStringParameters.categoria
+    const nome = event.queryStringParameters.nome
+    var params = {
+        TableName: TABLE_NAME,
+        ProjectionExpression: "id, nome",
+        FilterExpression: "#nome = :nome",
+        ExpressionAttributeNames:{
+            "#nome": "nome"
+        },
+        ExpressionAttributeValues: {
+            
+            ":nome": nome
+        }
+    };
+
+    var body
+
+    try {
+        const data = await docClient.scan(params).promise()
+
+        body = data.Items;
+    } catch (err) {
+        console.log(err);
+        body = err;
+    }
+    
+    return body;
 }
